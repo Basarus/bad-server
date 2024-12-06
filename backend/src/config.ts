@@ -11,6 +11,7 @@ export const ACCESS_TOKEN = {
 export const REFRESH_TOKEN = {
     secret: process.env.AUTH_REFRESH_TOKEN_SECRET || 'secret-dev',
     expiry: process.env.AUTH_REFRESH_TOKEN_EXPIRY || '7d',
+    secure: process.env.NODE_ENV === 'production',
     cookie: {
         name: 'refreshToken',
         options: {
