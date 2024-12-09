@@ -2,6 +2,7 @@ import winston from 'winston'
 import rateLimit from 'express-rate-limit'
 import { errors } from 'celebrate'
 import cookieParser from 'cookie-parser'
+import mongoSanitize from 'express-mongo-sanitize';
 import cors from 'cors'
 import 'dotenv/config'
 import express, { Request, Response, NextFunction } from 'express'
@@ -47,7 +48,7 @@ app.use((err: Error, _req: Request, _res: Response, next: NextFunction) => {
 
 app.use(express.urlencoded({ extended: true, limit: '10kb' }))
 app.use(express.json({ limit: '10kb' }))
-
+app.use(mongoSanitize());
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)

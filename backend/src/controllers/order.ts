@@ -33,6 +33,20 @@ export const getOrders = async (
         const filters: FilterQuery<Partial<IOrder>> = {}
 
         if (status) {
+            if (typeof status === 'string' && /^[a-zA-Z0-9_-]+$/.test(status)) {
+                filters.status = status;
+            } else {
+                throw new BadRequestError('Передан невалидный параметр статуса');
+            }
+        }
+        
+        if (search) {
+            if (/[^\w\s]/.test(search as string)) {
+                throw new BadRequestError('Передан невалидный поисковый запрос');
+            }
+        }
+
+        if (status) {
             if (typeof status === 'object') {
                 Object.assign(filters, status)
             }
