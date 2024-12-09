@@ -23,19 +23,8 @@ const limiter = rateLimit({
     legacyHeaders: false,
 })
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
-    'http://localhost:5173',
-]
 
 const corsOptions: CorsOptions = {
-    origin: (origin, callback) => {
-        console.log('Request origin:', origin);
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
 };
