@@ -26,17 +26,19 @@ const limiter = rateLimit({
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
     'http://localhost:5173',
 ]
+
 const corsOptions: CorsOptions = {
     origin: (origin, callback) => {
+        console.log('Request origin:', origin);
         if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true)
+            callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'))
+            callback(new Error('Not allowed by CORS'));
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
-}
+};
 
 const logger = winston.createLogger({
     level: 'info',

@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { FilterQuery, Error as MongooseError, Types } from 'mongoose'
+import validator from 'validator'
 import BadRequestError from '../errors/bad-request-error'
 import NotFoundError from '../errors/not-found-error'
 import Order, { IOrder } from '../models/order'
@@ -321,6 +322,11 @@ export const createOrder = async (
             customer: userId,
             deliveryAddress: address,
         })
+
+        if (phone && !validator.isMobilePhone(phone)) {
+            throw new BadRequestError('Не валидный номер телефона');
+        }
+
         const populateOrder = await newOrder.populate(['customer', 'products'])
         await populateOrder.save()
 
