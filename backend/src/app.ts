@@ -40,6 +40,8 @@ const corsOptions: CorsOptions = {
     credentials: true,
 };
 
+app.use(cors(corsOptions))
+
 const logger = winston.createLogger({
     level: 'info',
     transports: [
@@ -49,7 +51,6 @@ const logger = winston.createLogger({
 })
 
 app.use(limiter)
-app.use(cors(corsOptions))
 app.use(cookieParser())
 app.use(serveStatic(path.join(__dirname, 'public')))
 
