@@ -49,3 +49,8 @@ export const rateLimitConfig = {
     standardHeaders: true,
     legacyHeaders: false,
 }
+
+export const fileSizeConfig = {
+    maxSize: Number(process.env.MAX_FILE_SIZE) || 10e6,
+    minSize: Number(process.env.MIN_FILE_SIZE) || 2e3,
+}
