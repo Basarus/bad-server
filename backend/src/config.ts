@@ -41,3 +41,11 @@ export const allowedOrigins =
 process.env.ORIGIN_ALLOW && process.env.ORIGIN_ALLOW.indexOf(',') >= 0
     ? process.env.ALLOWED_ORIGINS?.split(',')
     : process.env.ORIGIN_ALLOW || 'http://localhost'
+
+export const rateLimitConfig = {
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Слишком много запросов с этого IP, попробуйте позже',
+    standardHeaders: true,
+    legacyHeaders: false,
+}
