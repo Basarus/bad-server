@@ -28,7 +28,7 @@ export const getOrders = async (
             search,
         } = req.query
 
-        const normalizedLimit = Math.min(Number(limit), 10);
+        const normalizedLimit = Math.min(Number(limit), 10).toString();
         const filters: FilterQuery<Partial<IOrder>> = {}
 
         if (status) {
