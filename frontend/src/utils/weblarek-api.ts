@@ -39,7 +39,7 @@ class Api {
             credentials: 'include',
             headers: {
                 ...((options.headers as object) ?? {}),
-                'CSRF-Token': getCookie('csrfToken')
+                'CSRF-Token': getCookie('csrfToken') ?? ''
             },
         }
     }
