@@ -5,7 +5,7 @@ import mongoose, { Document, HydratedDocument, Model, Types } from 'mongoose'
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
 
-import { ACCESS_TOKEN, REFRESH_TOKEN, JWT_SECRET } from '../config'
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '../config'
 import UnauthorizedError from '../errors/unauthorized-error'
 
 export enum Role {
@@ -140,7 +140,7 @@ userSchema.methods.generateAccessToken = function () {
         _id: this._id,
         email: this.email,
     }
-    return jwt.sign(payload, JWT_SECRET, {
+    return jwt.sign(payload, ACCESS_TOKEN.secret, {
         expiresIn: ACCESS_TOKEN.expiry,
         algorithm: 'HS256',
     })
