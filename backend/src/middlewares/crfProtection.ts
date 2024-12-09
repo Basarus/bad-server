@@ -1,12 +1,6 @@
-import csrf from 'csurf'
-import { Request, Response, NextFunction } from 'express'
+import { doubleCsrf } from "csrf-csrf";
+import { doubleCsrfOptions } from "../config";
 
-const csrfProtection = csrf({ cookie: true })
+const { doubleCsrfProtection: csrfProtection, generateToken } = doubleCsrf(doubleCsrfOptions);
 
-export const csrfMiddleware = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    csrfProtection(req, res, next)
-}
+export { csrfProtection, generateToken }

@@ -1,3 +1,4 @@
+import { DoubleCsrfConfigOptions } from 'csrf-csrf'
 import { CookieOptions } from 'express'
 import ms from 'ms'
 
@@ -21,5 +22,17 @@ export const REFRESH_TOKEN = {
             maxAge: ms(process.env.AUTH_REFRESH_TOKEN_EXPIRY || '7d'),
             path: '/',
         } as CookieOptions,
+    },
+}
+
+export const doubleCsrfOptions: DoubleCsrfConfigOptions = {
+    getSecret: () => process.env.CSRF_SECRET || '___Secret___',
+    cookieName: process.env.CSRF_COOKIE_NAME || '__Host-larek.x-csrf-token',
+    cookieOptions: {
+        sameSite: 'strict',
+        path: '/',
+        secure: process.env.CSRF_COOKIE_IS_SECURE
+            ? process.env.CSRF_COOKIE_IS_SECURE.toUpperCase() === 'TRUE'
+            : true,
     },
 }
