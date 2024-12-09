@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { constants } from 'http2'
 import fs from 'node:fs/promises'
-import { extname } from 'path'
 import BadRequestError from '../errors/bad-request-error'
 import { fileSizeConfig } from '../config'
 import { allowedTypes } from '../middlewares/file'
@@ -21,7 +20,7 @@ export const uploadFile = async (
         return next(new BadRequestError('Размер файла слишком мал'))
     }
 
-    if (!allowedTypes.includes(`image/${extname(req.file.filename)}`))
+    if (!allowedTypes.includes(req.file.mimetype))
         return next(new BadRequestError('Некорректный формат файла'))
 
     try {
