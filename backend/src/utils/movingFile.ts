@@ -6,7 +6,6 @@ function movingFile(imagePath: string, from: string, to: string) {
     const imagePathTemp = join(from, fileName);
     const imagePathPermanent = join(to, fileName);
 
-    // Нормализация путей для предотвращения Path Traversal
     const normalizedPathTemp = normalize(imagePathTemp);
     const normalizedPathPermanent = normalize(imagePathPermanent);
 

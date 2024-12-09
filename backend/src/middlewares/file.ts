@@ -1,4 +1,5 @@
 import { Request, Express } from 'express'
+import { v4 as uuidv4 } from 'uuid';
 import multer, { FileFilterCallback } from 'multer'
 import { join } from 'path'
 
@@ -24,10 +25,10 @@ const storage = multer.diskStorage({
 
     filename: (
         _req: Request,
-        file: Express.Multer.File,
+        _file: Express.Multer.File,
         cb: FileNameCallback
     ) => {
-        cb(null, file.originalname)
+        cb(null, uuidv4())
     },
 })
 
