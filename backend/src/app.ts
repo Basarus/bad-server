@@ -47,10 +47,8 @@ const logger = winston.createLogger({
 })
 
 app.use(limiter)
-app.use(cookieParser())
 app.use(cors(corsOptions))
-app.use(express.json({ limit: '10kb' }))
-app.use(express.urlencoded({ extended: true, limit: '10kb' }))
+app.use(cookieParser())
 app.use(serveStatic(path.join(__dirname, 'public')))
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
@@ -62,6 +60,9 @@ app.use((err: Error, _req: Request, _res: Response, next: NextFunction) => {
     logger.error(`${err.message}`)
     next(err)
 })
+
+app.use(express.urlencoded({ extended: true, limit: '10kb' }))
+app.use(express.json({ limit: '10kb' }))
 
 app.use(routes)
 app.use(errors())
