@@ -158,7 +158,7 @@ export const getOrdersCurrentUser = async (
     try {
         const userId = res.locals.user._id
         const { search, page = 1, limit = 5 } = req.query
-        const normalizedLimit = Math.min(Number(limit), 5);
+        const normalizedLimit = Math.min(Number(limit), 10);
         const options = {
             skip: (Number(page) - 1) * Number(limit),
             limit: Number(normalizedLimit),
