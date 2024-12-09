@@ -44,7 +44,7 @@ process.env.ORIGIN_ALLOW && process.env.ORIGIN_ALLOW.indexOf(',') >= 0
 
 export const rateLimitConfig = {
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 40,
     message: 'Слишком много запросов с этого IP, попробуйте позже',
     standardHeaders: true,
     legacyHeaders: false,
