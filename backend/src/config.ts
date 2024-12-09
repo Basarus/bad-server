@@ -36,26 +36,3 @@ export const doubleCsrfOptions: DoubleCsrfConfigOptions = {
             : true,
     },
 }
-
-let corsOrigin: string | string[]
-if (process.env.ORIGIN_ALLOW) {
-    corsOrigin =
-        process.env.ORIGIN_ALLOW?.indexOf(',') >= 0
-            ? process.env.ORIGIN_ALLOW?.split(',')
-            : process.env.ORIGIN_ALLOW
-} else {
-    corsOrigin = 'http://localhost'
-}
-
-export const corsOptions = {
-    origin: corsOrigin,
-    credentials: true,
-}
-
-export const rateLimiterConfig = {
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: 'Слишком много запросов с этого IP, попробуйте позже',
-    standardHeaders: true,
-    legacyHeaders: false,
-}

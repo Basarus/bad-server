@@ -2,12 +2,12 @@ import winston from 'winston'
 import rateLimit from 'express-rate-limit'
 import { errors } from 'celebrate'
 import cookieParser from 'cookie-parser'
-import cors from 'cors'
+import cors, { CorsOptions } from 'cors'
 import 'dotenv/config'
-import express, { Request, Response, NextFunction, urlencoded, json } from 'express'
+import express, { Request, Response, NextFunction } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
-import { DB_ADDRESS, corsOptions, rateLimiterConfig } from './config'
+import { DB_ADDRESS } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
@@ -15,8 +15,30 @@ import routes from './routes'
 const { PORT = 3000 } = process.env
 const app = express()
 
-app.use(rateLimit(rateLimiterConfig))
-app.use(cors(corsOptions))
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Слишком много запросов с этого IP, попробуйте позже',
+    standardHeaders: true,
+    legacyHeaders: false,
+})
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+    'http://localhost:5173',
+]
+
+const corsOptions: CorsOptions = {
+    origin: (origin, callback) => {
+        console.log('Request origin:', origin);
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+};
 
 const logger = winston.createLogger({
     level: 'info',
@@ -26,6 +48,8 @@ const logger = winston.createLogger({
     ],
 })
 
+app.use(limiter)
+app.use(cors(corsOptions))
 app.use(cookieParser())
 app.use(serveStatic(path.join(__dirname, 'public')))
 
@@ -39,8 +63,8 @@ app.use((err: Error, _req: Request, _res: Response, next: NextFunction) => {
     next(err)
 })
 
-app.use(urlencoded({ extended: true, limit: '10kb' }))
-app.use(json())
+app.use(express.urlencoded({ extended: true, limit: '10kb' }))
+app.use(express.json({ limit: '10kb' }))
 
 app.use(routes)
 app.use(errors())

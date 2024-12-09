@@ -7,6 +7,7 @@ import ConflictError from '../errors/conflict-error'
 import NotFoundError from '../errors/not-found-error'
 import Product from '../models/product'
 import movingFile from '../utils/movingFile'
+import { generateUniqueFileName } from '../utils/generateUniqueFileName'
 
 // GET /product
 const getProducts = async (req: Request, res: Response, next: NextFunction) => {
@@ -44,8 +45,9 @@ const createProduct = async (
 
         // Переносим картинку из временной папки
         if (image) {
+            const newFileName = generateUniqueFileName(image.fileName);
             movingFile(
-                image.fileName,
+                newFileName,
                 join(__dirname, `../public/${process.env.UPLOAD_PATH_TEMP}`),
                 join(__dirname, `../public/${process.env.UPLOAD_PATH}`)
             )
@@ -84,9 +86,10 @@ const updateProduct = async (
         const { image } = req.body
 
         // Переносим картинку из временной папки
+        const newFileName = generateUniqueFileName(image.fileName);
         if (image) {
             movingFile(
-                image.fileName,
+                newFileName,
                 join(__dirname, `../public/${process.env.UPLOAD_PATH_TEMP}`),
                 join(__dirname, `../public/${process.env.UPLOAD_PATH}`)
             )
