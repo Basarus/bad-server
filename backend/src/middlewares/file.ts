@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
         file: Express.Multer.File,
         cb: FileNameCallback
     ) => {
-        cb(null, uuidv4() + extname(file.originalname))
+        cb(null, uuidv4().concat('.', extname(file.originalname)))
     },
 })
 
