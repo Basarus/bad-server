@@ -51,3 +51,11 @@ export const corsOptions = {
     origin: corsOrigin,
     credentials: true,
 }
+
+export const rateLimiterConfig = {
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Слишком много запросов с этого IP, попробуйте позже',
+    standardHeaders: true,
+    legacyHeaders: false,
+}

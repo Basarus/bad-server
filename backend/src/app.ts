@@ -4,10 +4,10 @@ import { errors } from 'celebrate'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import 'dotenv/config'
-import express, { Request, Response, NextFunction } from 'express'
+import express, { Request, Response, NextFunction, urlencoded, json } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
-import { DB_ADDRESS, corsOptions } from './config'
+import { DB_ADDRESS, corsOptions, rateLimiterConfig } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
@@ -15,14 +15,7 @@ import routes from './routes'
 const { PORT = 3000 } = process.env
 const app = express()
 
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: 'Слишком много запросов с этого IP, попробуйте позже',
-    standardHeaders: true,
-    legacyHeaders: false,
-})
-
+app.use(rateLimit(rateLimiterConfig))
 app.use(cors(corsOptions))
 
 const logger = winston.createLogger({
@@ -33,7 +26,6 @@ const logger = winston.createLogger({
     ],
 })
 
-app.use(limiter)
 app.use(cookieParser())
 app.use(serveStatic(path.join(__dirname, 'public')))
 
@@ -47,8 +39,8 @@ app.use((err: Error, _req: Request, _res: Response, next: NextFunction) => {
     next(err)
 })
 
-app.use(express.urlencoded({ extended: true, limit: '10kb' }))
-app.use(express.json({ limit: '10kb' }))
+app.use(urlencoded({ extended: true, limit: '10kb' }))
+app.use(json())
 
 app.use(routes)
 app.use(errors())
