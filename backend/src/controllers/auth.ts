@@ -11,7 +11,7 @@ import UnauthorizedError from '../errors/unauthorized-error'
 import User from '../models/user'
 import { generateCsrfToken } from '../utils/generateCsrfToken'
 
-// POST /auth/login
+// POST /auth/login 
 const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password } = req.body
