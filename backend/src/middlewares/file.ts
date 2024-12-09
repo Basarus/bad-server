@@ -55,4 +55,8 @@ const fileFilter = (
     return cb(null, true)
 }
 
-export default multer({ storage, fileFilter, limits: { fileSize: fileSizeConfig.maxSize} })
+export default multer({
+    storage,
+    fileFilter,
+    limits: { fileSize: fileSizeConfig.maxSize },
+})
