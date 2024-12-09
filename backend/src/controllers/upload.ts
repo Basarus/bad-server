@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import { constants } from 'http2'
-import { fileTypeFromBuffer } from 'file-type';
+import { fileTypeFromBuffer } from 'file-type'
 import fs from 'node:fs/promises'
 import BadRequestError from '../errors/bad-request-error'
 import { fileSizeConfig } from '../config'
 import { allowedTypes } from '../middlewares/file'
-
 
 export const uploadFile = async (
     req: Request,
@@ -25,9 +24,9 @@ export const uploadFile = async (
         return next(new BadRequestError('Некорректный формат файла'))
 
     if (req.file?.buffer) {
-        const fileType = await fileTypeFromBuffer(req.file.buffer);
+        const fileType = await fileTypeFromBuffer(req.file.buffer)
         if (!fileType || !allowedTypes.includes(fileType.mime)) {
-            return next(new BadRequestError('Некорректный формат файла'));
+            return next(new BadRequestError('Некорректный формат файла'))
         }
     }
 
