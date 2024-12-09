@@ -36,3 +36,8 @@ export const doubleCsrfOptions: DoubleCsrfConfigOptions = {
             : true,
     },
 }
+
+export const allowedOrigins =
+process.env.ORIGIN_ALLOW && process.env.ORIGIN_ALLOW.indexOf(',') >= 0
+    ? process.env.ALLOWED_ORIGINS?.split(',')
+    : process.env.ORIGIN_ALLOW || 'http://localhost'

@@ -2,12 +2,12 @@ import winston from 'winston'
 import rateLimit from 'express-rate-limit'
 import { errors } from 'celebrate'
 import cookieParser from 'cookie-parser'
-import cors, { CorsOptions } from 'cors'
+import cors from 'cors'
 import 'dotenv/config'
 import express, { Request, Response, NextFunction } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
-import { DB_ADDRESS } from './config'
+import { allowedOrigins, DB_ADDRESS, rateLimitConfig } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
@@ -15,23 +15,7 @@ import routes from './routes'
 const { PORT = 3000 } = process.env
 const app = express()
 
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: 'Слишком много запросов с этого IP, попробуйте позже',
-    standardHeaders: true,
-    legacyHeaders: false,
-})
-
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
-    'http://localhost:5173',
-]
-
-const corsOptions: CorsOptions = {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    credentials: true,
-}
+app.use(rateLimit(rateLimitConfig))
 
 const logger = winston.createLogger({
     level: 'info',
@@ -41,8 +25,13 @@ const logger = winston.createLogger({
     ],
 })
 
-app.use(cors(corsOptions))
-app.use(limiter)
+app.use(
+    cors({
+        origin: allowedOrigins,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        credentials: true,
+    })
+)
 app.use(cookieParser())
 app.use(serveStatic(path.join(__dirname, 'public')))
 
