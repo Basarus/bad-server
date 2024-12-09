@@ -28,17 +28,10 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
 ]
 
 const corsOptions: CorsOptions = {
-    origin: (origin, callback) => {
-        console.log('Request origin:', origin);
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
-};
+}
 
 const logger = winston.createLogger({
     level: 'info',
@@ -48,8 +41,8 @@ const logger = winston.createLogger({
     ],
 })
 
-app.use(limiter)
 app.use(cors(corsOptions))
+app.use(limiter)
 app.use(cookieParser())
 app.use(serveStatic(path.join(__dirname, 'public')))
 

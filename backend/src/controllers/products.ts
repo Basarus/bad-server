@@ -45,9 +45,8 @@ const createProduct = async (
 
         // Переносим картинку из временной папки
         if (image) {
-            const newFileName = generateUniqueFileName(image.fileName);
             movingFile(
-                newFileName,
+                image.fileName,
                 join(__dirname, `../public/${process.env.UPLOAD_PATH_TEMP}`),
                 join(__dirname, `../public/${process.env.UPLOAD_PATH}`)
             )
@@ -55,7 +54,7 @@ const createProduct = async (
 
         const product = await Product.create({
             description,
-            image,
+            image: image ? {...image, fileName: generateUniqueFileName(image.fileName)} : undefined,
             category,
             price,
             title,
@@ -86,10 +85,9 @@ const updateProduct = async (
         const { image } = req.body
 
         // Переносим картинку из временной папки
-        const newFileName = generateUniqueFileName(image.fileName);
         if (image) {
             movingFile(
-                newFileName,
+                image.fileName,
                 join(__dirname, `../public/${process.env.UPLOAD_PATH_TEMP}`),
                 join(__dirname, `../public/${process.env.UPLOAD_PATH}`)
             )
@@ -101,7 +99,7 @@ const updateProduct = async (
                 $set: {
                     ...req.body,
                     price: req.body.price ? req.body.price : null,
-                    image: req.body.image ? req.body.image : undefined,
+                    image: req.body.image ? {...image, fileName: generateUniqueFileName(req.body.image.fileName)} : undefined,
                 },
             },
             { runValidators: true, new: true }
