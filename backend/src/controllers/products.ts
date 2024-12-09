@@ -7,7 +7,6 @@ import ConflictError from '../errors/conflict-error'
 import NotFoundError from '../errors/not-found-error'
 import Product from '../models/product'
 import movingFile from '../utils/movingFile'
-import { generateUniqueFileName } from '../utils/generateUniqueFileName'
 
 // GET /product
 const getProducts = async (req: Request, res: Response, next: NextFunction) => {
@@ -54,7 +53,7 @@ const createProduct = async (
 
         const product = await Product.create({
             description,
-            image: image ? {...image, fileName: generateUniqueFileName(image.fileName)} : undefined,
+            image,
             category,
             price,
             title,
@@ -99,7 +98,7 @@ const updateProduct = async (
                 $set: {
                     ...req.body,
                     price: req.body.price ? req.body.price : null,
-                    image: req.body.image ? {...image, fileName: generateUniqueFileName(req.body.image.fileName)} : undefined,
+                    image: req.body.image ? req.body.image : undefined,
                 },
             },
             { runValidators: true, new: true }
