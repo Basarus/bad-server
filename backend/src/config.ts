@@ -36,3 +36,18 @@ export const doubleCsrfOptions: DoubleCsrfConfigOptions = {
             : true,
     },
 }
+
+let corsOrigin: string | string[]
+if (process.env.ORIGIN_ALLOW) {
+    corsOrigin =
+        process.env.ORIGIN_ALLOW?.indexOf(',') >= 0
+            ? process.env.ORIGIN_ALLOW?.split(',')
+            : process.env.ORIGIN_ALLOW
+} else {
+    corsOrigin = 'http://localhost'
+}
+
+export const corsOptions = {
+    origin: corsOrigin,
+    credentials: true,
+}
