@@ -28,7 +28,7 @@ export const getOrders = async (
             search,
         } = req.query
 
-        const normalizedLimit = Math.min(Number(limit), 10).toString();
+        const normalizedLimit = Math.min(Number(limit), 5).toString();
         const filters: FilterQuery<Partial<IOrder>> = {}
 
         if (status) {
@@ -158,7 +158,7 @@ export const getOrdersCurrentUser = async (
     try {
         const userId = res.locals.user._id
         const { search, page = 1, limit = 5 } = req.query
-        const normalizedLimit = Math.min(Number(limit), 10);
+        const normalizedLimit = Math.min(Number(limit), 5);
         const options = {
             skip: (Number(page) - 1) * Number(limit),
             limit: Number(normalizedLimit),
