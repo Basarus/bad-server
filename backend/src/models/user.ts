@@ -80,6 +80,10 @@ const userSchema = new mongoose.Schema<IUser, IUserModel, IUserMethods>(
         },
         phone: {
             type: String,
+            validate: {
+                validator: (v: string) => validator.isMobilePhone(v),
+                message: 'Поле "Телефон" должно быть валидным',
+            },
         },
         lastOrderDate: {
             type: Date,

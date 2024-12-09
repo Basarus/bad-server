@@ -1,10 +1,12 @@
 import { NextFunction, Request, Response } from 'express'
 import { FilterQuery, Error as MongooseError, Types } from 'mongoose'
+import validator from 'validator'
 import BadRequestError from '../errors/bad-request-error'
 import NotFoundError from '../errors/not-found-error'
 import Order, { IOrder } from '../models/order'
 import Product, { IProduct } from '../models/product'
 import User from '../models/user'
+import escapeRegExp from '../utils/escapeRegExp'
 
 // eslint-disable-next-line max-len
 // GET /orders?page=2&limit=5&sort=totalAmount&order=desc&orderDateFrom=2024-07-01&orderDateTo=2024-08-01&status=delivering&totalAmountFrom=100&totalAmountTo=1000&search=%2B1
@@ -26,16 +28,19 @@ export const getOrders = async (
             orderDateFrom,
             orderDateTo,
             search,
-        } = req.query
+        } = req.query;
 
-        const filters: FilterQuery<Partial<IOrder>> = {}
+        const normalizedPage = Math.max(Number(page) || 1, 1);
+        const normalizedLimit = Math.min(Math.max(Number(limit) || 10, 1), 100);
+
+        const filters: FilterQuery<Partial<IOrder>> = {};
 
         if (status) {
             if (typeof status === 'object') {
-                Object.assign(filters, status)
+                Object.assign(filters, status);
             }
             if (typeof status === 'string') {
-                filters.status = status
+                filters.status = status;
             }
         }
 
@@ -43,28 +48,28 @@ export const getOrders = async (
             filters.totalAmount = {
                 ...filters.totalAmount,
                 $gte: Number(totalAmountFrom),
-            }
+            };
         }
 
         if (totalAmountTo) {
             filters.totalAmount = {
                 ...filters.totalAmount,
                 $lte: Number(totalAmountTo),
-            }
+            };
         }
 
         if (orderDateFrom) {
             filters.createdAt = {
                 ...filters.createdAt,
                 $gte: new Date(orderDateFrom as string),
-            }
+            };
         }
 
         if (orderDateTo) {
             filters.createdAt = {
                 ...filters.createdAt,
                 $lte: new Date(orderDateTo as string),
-            }
+            };
         }
 
         const aggregatePipeline: any[] = [
@@ -87,37 +92,37 @@ export const getOrders = async (
             },
             { $unwind: '$customer' },
             { $unwind: '$products' },
-        ]
+        ];
 
         if (search) {
-            const searchRegex = new RegExp(search as string, 'i')
-            const searchNumber = Number(search)
+            const searchRegex = new RegExp(search as string, 'i');
+            const searchNumber = Number(search);
 
-            const searchConditions: any[] = [{ 'products.title': searchRegex }]
+            const searchConditions: any[] = [{ 'products.title': searchRegex }];
 
             if (!Number.isNaN(searchNumber)) {
-                searchConditions.push({ orderNumber: searchNumber })
+                searchConditions.push({ orderNumber: searchNumber });
             }
 
             aggregatePipeline.push({
                 $match: {
                     $or: searchConditions,
                 },
-            })
+            });
 
-            filters.$or = searchConditions
+            filters.$or = searchConditions;
         }
 
-        const sort: { [key: string]: any } = {}
+        const sort: { [key: string]: any } = {};
 
         if (sortField && sortOrder) {
-            sort[sortField as string] = sortOrder === 'desc' ? -1 : 1
+            sort[sortField as string] = sortOrder === 'desc' ? -1 : 1;
         }
 
         aggregatePipeline.push(
             { $sort: sort },
-            { $skip: (Number(page) - 1) * Number(limit) },
-            { $limit: Number(limit) },
+            { $skip: (normalizedPage - 1) * normalizedLimit },
+            { $limit: normalizedLimit },
             {
                 $group: {
                     _id: '$_id',
@@ -129,25 +134,25 @@ export const getOrders = async (
                     createdAt: { $first: '$createdAt' },
                 },
             }
-        )
+        );
 
-        const orders = await Order.aggregate(aggregatePipeline)
-        const totalOrders = await Order.countDocuments(filters)
-        const totalPages = Math.ceil(totalOrders / Number(limit))
+        const orders = await Order.aggregate(aggregatePipeline);
+        const totalOrders = await Order.countDocuments(filters);
+        const totalPages = Math.ceil(totalOrders / normalizedLimit);
 
         res.status(200).json({
             orders,
             pagination: {
                 totalOrders,
                 totalPages,
-                currentPage: Number(page),
-                pageSize: Number(limit),
+                currentPage: normalizedPage,
+                pageSize: normalizedLimit,
             },
-        })
+        });
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};
 
 export const getOrdersCurrentUser = async (
     req: Request,
@@ -155,16 +160,20 @@ export const getOrdersCurrentUser = async (
     next: NextFunction
 ) => {
     try {
-        const userId = res.locals.user._id
-        const { search, page = 1, limit = 5 } = req.query
+        const userId = res.locals.user._id;
+        const { search, page = 1, limit = 5 } = req.query;
+        const normalizedPage = Math.max(Number(page) || 1, 1);
+        const normalizedLimit = Math.min(Math.max(Number(limit) || 5, 1), 100);
+
         const options = {
-            skip: (Number(page) - 1) * Number(limit),
-            limit: Number(limit),
-        }
+            skip: (normalizedPage - 1) * normalizedLimit,
+            limit: normalizedLimit,
+        };
 
         const user = await User.findById(userId)
             .populate({
                 path: 'orders',
+                options,
                 populate: [
                     {
                         path: 'products',
@@ -174,55 +183,47 @@ export const getOrdersCurrentUser = async (
                     },
                 ],
             })
-            .orFail(
-                () =>
-                    new NotFoundError(
-                        'Пользователь по заданному id отсутствует в базе'
-                    )
-            )
+            .orFail(() => new NotFoundError('Пользователь по заданному id отсутствует в базе'));
 
-        let orders = user.orders as unknown as IOrder[]
+        let orders = user.orders as unknown as IOrder[];
 
         if (search) {
-            // если не экранировать то получаем Invalid regular expression: /+1/i: Nothing to repeat
-            const searchRegex = new RegExp(search as string, 'i')
-            const searchNumber = Number(search)
-            const products = await Product.find({ title: searchRegex })
-            const productIds: Types.ObjectId[] = products.map(
-                (product) => product._id
-            )
+            const searchRegex = new RegExp(escapeRegExp(search as string), 'i');
+            const searchNumber = Number(search);
+
+            const products = await Product.find({ title: searchRegex });
+            const productIds: Types.ObjectId[] = products.map((product) => product._id);
 
             orders = orders.filter((order) => {
                 const matchesProductTitle = order.products.some((product) =>
                     productIds.some((id) => id.equals(product._id))
-                )
+                );
 
                 const matchesOrderNumber =
-                    !Number.isNaN(searchNumber) &&
-                    order.orderNumber === searchNumber
+                    !Number.isNaN(searchNumber) && order.orderNumber === searchNumber;
 
-                return matchesOrderNumber || matchesProductTitle
-            })
+                return matchesOrderNumber || matchesProductTitle;
+            });
         }
 
-        const totalOrders = orders.length
-        const totalPages = Math.ceil(totalOrders / Number(limit))
-
-        orders = orders.slice(options.skip, options.skip + options.limit)
+        // Пагинация вручную, если orders были отфильтрованы
+        const totalOrders = orders.length;
+        const totalPages = Math.ceil(totalOrders / normalizedLimit);
+        orders = orders.slice(options.skip, options.skip + options.limit);
 
         return res.send({
             orders,
             pagination: {
                 totalOrders,
                 totalPages,
-                currentPage: Number(page),
-                pageSize: Number(limit),
+                currentPage: normalizedPage,
+                pageSize: normalizedLimit,
             },
-        })
+        });
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};
 
 // Get order by ID
 export const getOrderByNumber = async (
@@ -321,6 +322,8 @@ export const createOrder = async (
             customer: userId,
             deliveryAddress: address,
         })
+
+        if (!validator.isMobilePhone(phone))  return next(new BadRequestError('Не валидный номер телефона'))
 
         const populateOrder = await newOrder.populate(['customer', 'products'])
         await populateOrder.save()
