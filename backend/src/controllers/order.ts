@@ -29,7 +29,7 @@ export const getOrders = async (
             search,
         } = req.query
 
-        const normalizedLimit = Math.min(Number(limit), 5).toString();
+        const normalizedLimit = Math.min(Number(limit), 5).toString()
         const filters: FilterQuery<Partial<IOrder>> = {}
 
         if (status) {
@@ -159,7 +159,7 @@ export const getOrdersCurrentUser = async (
     try {
         const userId = res.locals.user._id
         const { search, page = 1, limit = 5 } = req.query
-        const normalizedLimit = Math.min(Number(limit), 5);
+        const normalizedLimit = Math.min(Number(limit), 5)
         const options = {
             skip: (Number(page) - 1) * Number(limit),
             limit: Number(normalizedLimit),
@@ -297,6 +297,10 @@ export const createOrder = async (
         const { address, payment, phone, total, email, items, comment } =
             req.body
 
+        if (phone && !validator.isMobilePhone(phone)) {
+            throw new BadRequestError('Не валидный номер телефона')
+        }
+
         items.forEach((id: Types.ObjectId) => {
             const product = products.find((p) => p._id.equals(id))
             if (!product) {
@@ -322,10 +326,6 @@ export const createOrder = async (
             customer: userId,
             deliveryAddress: address,
         })
-
-        if (phone && !validator.isMobilePhone(phone)) {
-            throw new BadRequestError('Не валидный номер телефона');
-        }
 
         const populateOrder = await newOrder.populate(['customer', 'products'])
         await populateOrder.save()
