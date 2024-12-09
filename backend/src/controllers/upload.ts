@@ -15,16 +15,13 @@ export const uploadFile = async (
         return next(new BadRequestError('Файл не загружен'))
     }
 
-    if (
-        (req.file.size < fileSizeConfig.minSize ||
-            !req.file ||
-            !req.file.path)
-    ) {
+    if (req.file.size < fileSizeConfig.minSize || !req.file || !req.file.path) {
         await fs.unlink(req.file.path)
         return next(new BadRequestError('Размер файла слишком мал'))
     }
 
     if (!allowedTypes.includes(`image/${extname(req.file.filename)}`))
+        return next(new BadRequestError('Некорректный формат файла'))
 
     try {
         const fileName = process.env.UPLOAD_PATH
