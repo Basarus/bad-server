@@ -52,7 +52,6 @@
     "express": "^4.19.2",
     "express-csrf": "^0.3.4",
     "express-rate-limit": "^7.4.1",
-    "file-type": "^19.6.0",
     "jsonwebtoken": "^9.0.2",
     "md5": "^2.3.0",
     "mime-types": "^2.1.35",
